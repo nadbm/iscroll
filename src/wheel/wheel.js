@@ -80,7 +80,27 @@
 				newY++;
 			}
 
-			this.goToPage(newX, newY);
+			// 201604*pike
+			// prevent macs 'momentum' scrolling, that
+			// keeps firing mousewheel events, from scrolling
+			// up 100s of pages per flick
+			
+			if (this.options.blockMomentum) {
+				if (newX != this.currentPage.pageX || newY != this.currentPage.pageY) {
+					if (!this.blockMomentum) {
+						this.blockMomentum = true;
+						this.goToPage(newX, newY);
+						this.snapTimeout = setTimeout(function () {
+							that.blockMomentum = false;
+							that.snapTimeout = undefined;
+						}, this.options.snapSpeed/2);
+					} else {
+						//console.log('blocked momentum');
+					}
+				}
+			} else {
+				this.goToPage(newX, newY);
+			}
 
 			return;
 		}
