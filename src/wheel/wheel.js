@@ -30,12 +30,14 @@
 
 		// Execute the scrollEnd event after 400ms the wheel stopped scrolling
 		clearTimeout(this.wheelTimeout);
-		this.wheelTimeout = setTimeout(function () {
-			if(!that.options.snap) {
+		
+		// 201606*pike
+		if (!this.blockMomentum) {
+			this.wheelTimeout = setTimeout(function () {
 				that._execEvent('scrollEnd');
-			}
-			that.wheelTimeout = undefined;
-		}, 400);
+				that.wheelTimeout = undefined;
+			}, 400);
+		}
 
 		if ( 'deltaX' in e ) {
 			if (e.deltaMode === 1) {
@@ -80,27 +82,30 @@
 				newY++;
 			}
 
-			// 201604*pike
-			// prevent macs 'momentum' scrolling, that
-			// keeps firing mousewheel events, from scrolling
-			// up 100s of pages per flick
-			
+			// 201606*pike
 			if (this.options.blockMomentum) {
+				//console.log(this.currentPage.pageX,this.currentPage.pageY,newX,newY);
 				if (newX != this.currentPage.pageX || newY != this.currentPage.pageY) {
 					if (!this.blockMomentum) {
 						this.blockMomentum = true;
 						this.goToPage(newX, newY);
-						this.snapTimeout = setTimeout(function () {
+						// triggers onScrollEnd
+						this.momentumTimer = setTimeout(function () {
 							that.blockMomentum = false;
-							that.snapTimeout = undefined;
-						}, this.options.snapSpeed/2);
+							that.momentumTimer = undefined;
+							// trigger scrollstart after this
+							that.wheelTimeout = undefined;
+						}, this.options.momentumTimeout || this.options.snapSpeed);
+						
 					} else {
-						//console.log('blocked momentum');
+						// nop
 					}
 				}
 			} else {
 				this.goToPage(newX, newY);
 			}
+			
+			
 
 			return;
 		}
