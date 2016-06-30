@@ -34,7 +34,9 @@
 		// 201606*pike
 		if (!this.blockMomentum) {
 			this.wheelTimeout = setTimeout(function () {
-				that._execEvent('scrollEnd');
+				if(!that.options.snap) {
+					that._execEvent('scrollEnd');
+				}
 				that.wheelTimeout = undefined;
 			}, 400);
 		}
